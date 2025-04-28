@@ -1,0 +1,57 @@
+[project]
+name = "antpathmatcher"
+version = "0.0.1"
+description = "Python Implementation of the Ant-style path patterns, inspired by Spring Framework's AntPathMatcher."
+authors = [{name = "Sylvain Mouquet", email = "sylvain.mouquet@gmail.com"}]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+license = { text = "MIT" }
+url = "https://github.com/sylvainmouquet/antpathmatcher"
+keywords = [
+    "python",
+    "ant",
+    "path",
+    "matcher"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+homepage = "https://github.com/sylvainmouquet/antpathmatcher"
+documentation = "https://github.com/sylvainmouquet/antpathmatcher"
+repository = "https://github.com/sylvainmouquet/antpathmatcher"
+changelog = "https://github.com/sylvainmouquet/antpathmatcher/releases"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "loguru>=0.7.2",
+    "pip>=24.2",
+    "pytest-asyncio>=0.24.0",
+    "pytest-mock>=3.14.0",
+    "pytest>=8.3.3",
+    "ruff>=0.6.7",
+]
+
+[tool.uv.sources]
+antpathmatcher = { path = "antpathmatcher" }
+
+[project.entry-points.pytest11]
+antpathmatcher = "antpathmatcher"
