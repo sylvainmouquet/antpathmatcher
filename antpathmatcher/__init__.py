@@ -4,9 +4,4 @@ __all__ = (
     "AntPathMatcher",
 )
 
-import logging
-
 from antpathmatcher.antpathmatcher import AntPathMatcher
-
-logger = logging.getLogger("antpathmatcher")
-logger.addHandler(logging.NullHandler())
