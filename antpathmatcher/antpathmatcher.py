@@ -1,8 +1,9 @@
+import logging
 import re
 from typing import Literal
 
-
-from loguru import logger
+logger = logging.getLogger("antpathmatcher")
+logger.addHandler(logging.NullHandler())
 
 
 class AntPathMatcher:
