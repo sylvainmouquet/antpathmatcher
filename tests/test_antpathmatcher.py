@@ -123,7 +123,6 @@ async def test_antpathmatcher_match_mach_II():
             assert antpathmatcher.match(pattern=pattern, path=valid_paths) is False
 
 
-
 @pytest.mark.asyncio
 async def test_antpathmatcher_match():
     antpathmatcher = AntPathMatcher()
