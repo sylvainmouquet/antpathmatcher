@@ -1,12 +1,23 @@
 import logging
 import re
 from typing import Literal
+from typing import Protocol, runtime_checkable
 
 logger = logging.getLogger("antpathmatcher")
 logger.addHandler(logging.NullHandler())
 
 
-class AntPathMatcher:
+@runtime_checkable
+class PathMatcherProtocol(Protocol):
+    """Protocol defining the interface for path matchers."""
+
+    def match(self, pattern: str, path: str) -> bool: ...
+    def extract_uri_template_variables(
+        self, pattern: str, path: str
+    ) -> dict[str, str]: ...
+
+
+class AntPathMatcher(PathMatcherProtocol):
     """
     Python implementation of Ant-style path patterns.
 
@@ -69,10 +80,10 @@ class AntPathMatcher:
         pattern_regex = pattern.strip()
 
         # First replace regex special characters and Ant pattern characters with placeholders
-        pattern_regex = pattern_regex.replace(f"**{self.path_separator}", "__DOUBLE_STAR_SLASH__")
         pattern_regex = pattern_regex.replace(
-            f"**", "__DOUBLE_STAR_SLASH__"
+            f"**{self.path_separator}", "__DOUBLE_STAR_SLASH__"
         )
+        pattern_regex = pattern_regex.replace("**", "__DOUBLE_STAR_SLASH__")
         pattern_regex = pattern_regex.replace("?", "__QUESTION_MARK__")
         pattern_regex = pattern_regex.replace("*", "__SINGLE_STAR__")
 
