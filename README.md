@@ -1,12 +1,20 @@
 # AntPathMatcher
 
+[![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Type Hints](https://img.shields.io/badge/typing-typed-green.svg)](https://docs.python.org/3/library/typing.html)
+[![macOS](https://img.shields.io/badge/macOS-supported-brightgreen.svg)](https://www.apple.com/macos/)
+[![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg)](https://www.microsoft.com/windows/)
+[![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
+
 Python Implementation of the Ant-style path patterns, inspired by Spring Framework's AntPathMatcher.
 
-## References
+## 🔗 References
 
-[Spring framework - AntPathMatcher](https://docs.spring.io/spring-framework/docs/5.1.6.RELEASE_to_5.2.0.M1/Spring%20Framework%205.1.6.RELEASE/org/springframework/util/AntPathMatcher.html)
+- [Spring framework - AntPathMatcher](https://docs.spring.io/spring-framework/docs/5.1.6.RELEASE_to_5.2.0.M1/Spring%20Framework%205.1.6.RELEASE/org/springframework/util/AntPathMatcher.html)
+- [Ant Path Patterns Documentation](https://ant.apache.org/manual/dirtasks.html#patterns)
 
-## Features
+## 🚀 Key Features
 
 - Match URL paths and file paths using Ant-style patterns
 - Support for wildcards:
@@ -18,7 +26,7 @@ Python Implementation of the Ant-style path patterns, inspired by Spring Framewo
 - Fully type-hinted for modern Python development
 - Compatible with Python 3.10+
 
-## Installation
+## 📦 Installation
 
 ```bash
 pip install antpathmatcher
@@ -30,7 +38,7 @@ Or with uv:
 uv add antpathmatcher
 ```
 
-## Quick Start
+## 🎯 Quick Start
 
 ### Basic Pattern Matching
 
@@ -95,6 +103,6 @@ matcher.match("com.example.???.service", "com.example.api.service") # True
 matcher.match("com.**.service", "com.example.module.api.service")   # True
 ```
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
