@@ -1,10 +1,18 @@
 import logging
 import re
-from typing import Literal
+from enum import Enum
 from typing import Protocol, runtime_checkable
 
 logger = logging.getLogger("antpathmatcher")
 logger.addHandler(logging.NullHandler())
+
+
+class _Placeholder(str, Enum):
+    """Internal placeholders for pattern conversion."""
+
+    DOUBLE_STAR = "__DOUBLE_STAR__"
+    SINGLE_STAR = "__SINGLE_STAR__"
+    QUESTION_MARK = "__QUESTION_MARK__"
 
 
 @runtime_checkable
@@ -31,7 +39,7 @@ class AntPathMatcher(PathMatcherProtocol):
     - ** - matches zero or more directories in a path
     """
 
-    def __init__(self, path_separator: str | Literal["/"] = "/"):
+    def __init__(self, path_separator: str = "/"):
         """
         Initialize an AntPathMatcher with a configurable path separator.
 
@@ -71,7 +79,7 @@ class AntPathMatcher(PathMatcherProtocol):
             pattern: The Ant-style pattern to convert
 
         Returns:
-            str: A regular expression equivalent of the input pattern
+            A regular expression equivalent of the input pattern
 
         Example:
             Input: "/users/*/profile"
@@ -79,26 +87,29 @@ class AntPathMatcher(PathMatcherProtocol):
         """
         pattern_regex = pattern.strip()
 
-        # First replace regex special characters and Ant pattern characters with placeholders
+        # First replace Ant pattern characters with placeholders
         pattern_regex = pattern_regex.replace(
-            f"**{self.path_separator}", "__DOUBLE_STAR_SLASH__"
+            f"**{self.path_separator}", _Placeholder.DOUBLE_STAR
         )
-        pattern_regex = pattern_regex.replace("**", "__DOUBLE_STAR_SLASH__")
-        pattern_regex = pattern_regex.replace("?", "__QUESTION_MARK__")
-        pattern_regex = pattern_regex.replace("*", "__SINGLE_STAR__")
+        pattern_regex = pattern_regex.replace("**", _Placeholder.DOUBLE_STAR)
+        pattern_regex = pattern_regex.replace("?", _Placeholder.QUESTION_MARK)
+        pattern_regex = pattern_regex.replace("*", _Placeholder.SINGLE_STAR)
 
         # all {variables} are interpreted like single *
-        pattern_regex = re.sub(r"{[^}]+}", "__SINGLE_STAR__", pattern_regex)
+        pattern_regex = re.sub(r"{[^}]+}", _Placeholder.SINGLE_STAR, pattern_regex)
 
         logger.debug(f"first pattern replacement = {pattern_regex}")
 
+        # Escape regex special characters (after placeholder substitution)
+        pattern_regex = re.escape(pattern_regex)
+
         # Then convert placeholders to their regex equivalents
-        pattern_regex = pattern_regex.replace("__DOUBLE_STAR_SLASH__", ".*")
+        pattern_regex = pattern_regex.replace(_Placeholder.DOUBLE_STAR, ".*")
         pattern_regex = pattern_regex.replace(
-            "__QUESTION_MARK__", f"[^{self.path_separator_slug}]"
+            _Placeholder.QUESTION_MARK, f"[^{self.path_separator_slug}]"
         )
         pattern_regex = pattern_regex.replace(
-            "__SINGLE_STAR__", f"[^{self.path_separator_slug}]*?"
+            _Placeholder.SINGLE_STAR, f"[^{self.path_separator_slug}]*?"
         )
         logger.debug(f"second pattern replacement = {pattern_regex}")
         return pattern_regex
@@ -108,14 +119,14 @@ class AntPathMatcher(PathMatcherProtocol):
         Match a path against an Ant-style pattern.
 
         This method checks if the given path matches the specified Ant-style pattern.
-        Ant-style patterns support these special characters
+        Ant-style patterns support wildcards (?, *, **) and path variables ({name}).
 
         Args:
             pattern: The Ant-style pattern to match against
             path: The path to be matched
 
         Returns:
-            bool: True if the path matches the pattern, False otherwise
+            True if the path matches the pattern, False otherwise
         """
         pattern_regex = self._prepare_pattern_regex(pattern)
 
@@ -123,7 +134,7 @@ class AntPathMatcher(PathMatcherProtocol):
         # fullmatch checks for entire string to be a match
         # (cf https://docs.python.org/3/library/re.html#search-vs-match )
         is_match = re.fullmatch(pattern_regex, path) is not None
-        logger.debug(f"match result : {pattern=} and {path=} is {is_match}")
+        logger.debug(f"match result: {pattern=} and {path=} is {is_match}")
         return is_match
 
     def extract_uri_template_variables(self, pattern: str, path: str) -> dict[str, str]:
@@ -142,29 +153,31 @@ class AntPathMatcher(PathMatcherProtocol):
         Returns:
             Dictionary mapping variable names to their values
         """
-
         # Extract variable names from pattern
         variable_names = re.findall(r"{([^}]+)}", pattern)
 
         if not variable_names:
             return {}
 
-        # Create a regex pattern that captures groups for each variable
-        regex_pattern = pattern
+        # Escape the pattern for regex, then replace variables with capture groups
+        regex_pattern = re.escape(pattern)
         for var_name in variable_names:
-            regex_pattern = regex_pattern.replace(f"{{{var_name}}}", "([^/]+)")
+            escaped_var = re.escape(f"{{{var_name}}}")
+            regex_pattern = regex_pattern.replace(
+                escaped_var, f"([^{self.path_separator_slug}]+)"
+            )
 
         # Match the path against the pattern
-        match = re.match(regex_pattern, path)
+        match = re.fullmatch(regex_pattern, path)
 
         if not match:
-            logger.debug(f"extract : No match found for {pattern=} and {path=}")
+            logger.debug(f"extract: No match found for {pattern=} and {path=}")
             return {}
 
         # Create a dictionary mapping variable names to their values
-        result = {}
-        for i, var_name in enumerate(variable_names):
-            result[var_name] = match.group(i + 1)
+        result = {
+            var_name: match.group(i + 1) for i, var_name in enumerate(variable_names)
+        }
 
-        logger.debug(f"extract : result: {pattern=} and {path=} is {result}")
+        logger.debug(f"extract: result: {pattern=} and {path=} is {result}")
         return result
